@@ -1,21 +1,4 @@
-﻿function Send-Email($SmtpFrom, $SmtpTo, $MessageSubject, $Body, $Attachments)
-{
-    Write-Host "Sending mail $MessageSubject from $SmtpFrom to $SmtpTo"
-    $message = New-Object System.Net.Mail.MailMessage $SmtpFrom, $SmtpTo
-    $message.Subject = $MessageSubject
-    $message.IsBodyHtml = $true
-    $message.Body = $Body
-    foreach($Attachment in $Attachments)
-    {
-        Write-Host "Adding attachment: " $Attachment
-        $message.Attachments.Add($Attachment)
-    }
-    $smtp = New-Object Net.Mail.SmtpClient($SmtpServer)
-    $smtp.Send($message)
-    $message.Dispose()
-}
-
-$Ous = Get-Content ($PSScriptRoot + "\OUs.txt")
+﻿$Ous = Get-Content ($PSScriptRoot + "\OUs.txt")
 $objOus = @()
 
 ForEach($Ou in $Ous)
@@ -104,7 +87,12 @@ ForEach($Ou in $objOus){
         $body = $body -replace "{UPDATE_TABLE}", $UpdateTable
 
         $Attachments = $(($PSScriptRoot + "\\OneFugro-Notification.png"))
-        Send-Email -SmtpFrom $SmtpFrom -SmtpTo $Ou.Contact -MessageSubject $MessageSubject -Body $Body -Attachments $Attachments
-        Send-Email -SmtpFrom $SmtpFrom -SmtpTo $SmtpCc -MessageSubject $MessageSubject -Body $Body -Attachments $Attachments
+        #Send-Email -SmtpFrom $SmtpFrom -SmtpTo $Ou.Contact -MessageSubject $MessageSubject -Body $Body -Attachments $Attachments
+        #Send-Email -SmtpFrom $SmtpFrom -SmtpTo $SmtpCc -MessageSubject $MessageSubject -Body $Body -Attachments $Attachments
+
+        Send-MailMessage -SmtpServer $SmtpServer -From $SmtpFrom -To $Ou.Contact -Subject $MessageSubject -BodyAsHtml $body -Attachments $Attachments
+        if($SmtpCc.Length -gt 0){
+            Send-MailMessage -SmtpServer $SmtpServer -From $SmtpFrom -To $SmtpCc -Subject $MessageSubject -BodyAsHtml $body -Attachments $Attachments
+        }
     }
 }
